@@ -2,15 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Definições para limpar a tela, dependendo do sistema operacional
 #ifdef _WIN32
     #define CLEAR "cls"
 #else
     #define CLEAR "clear"
 #endif
 
+// Definindo constantes para o número máximo de procedimentos e horários
 #define MAX_PROCEDIMENTOS 5
 #define MAX_HORARIOS 9
 
+// Nomes dos procedimentos
 char* procedimentoNomes[MAX_PROCEDIMENTOS] = {
     "Clinico Geral",
     "Fisioterapia",
@@ -19,6 +22,7 @@ char* procedimentoNomes[MAX_PROCEDIMENTOS] = {
     "Avaliacao Fisica"
 };
 
+// Valores dos procedimentos
 float procedimentoValores[MAX_PROCEDIMENTOS] = {
     250.00,
     110.00,
@@ -27,60 +31,65 @@ float procedimentoValores[MAX_PROCEDIMENTOS] = {
     89.00
 };
 
-char agendas[MAX_PROCEDIMENTOS][MAX_HORARIOS][8]; // Agenda específica para cada procedimento
+// Matrizes para armazenar os horários das agendas dos procedimentos
+char agendas[MAX_PROCEDIMENTOS][MAX_HORARIOS][12]; // Agenda específica para cada procedimento
 
+// Declaração de funções
 void exibirMenuPrincipal();
 void exibirProcedimentos();
-void agendarHorario();
+void agendarHorario(int procedimentoIndex);
+void visualizarAgendas();
 void exibirAgenda(int procedimentoIndex);
 void inicializarAgenda();
 
 int main() {
     int opcao;
 
-    // Inicializar agendas de todos os procedimentos
+    // Inicializar as agendas de todos os procedimentos
     inicializarAgenda();
 
+    // Loop principal 
     while (1) {
-        exibirMenuPrincipal();
+        exibirMenuPrincipal(); // Exibe o menu principal
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
         switch (opcao) {
             case 1:
-                exibirProcedimentos();
+                exibirProcedimentos(); // Exibe os procedimentos disponíveis
                 break;
             case 2:
-                agendarHorario();
+                visualizarAgendas(); // Permite visualizar as agendas dos procedimentos
                 break;
             case 3:
-                printf("Funcionalidade em desenvolvimento.\n");
+                printf("Funcionalidade em desenvolvimento.\n"); 
                 break;
             case 5:
-                printf("Funcionalidade em desenvolvimento.\n");
+                printf("Funcionalidade em desenvolvimento.\n"); 
                 break;
             case 6:
-                printf("Funcionalidade em desenvolvimento.\n");
+                printf("Funcionalidade em desenvolvimento.\n"); 
                 break;
             case 7:
-                printf("Saindo...\n");
+                printf("Saindo...\n"); 
                 exit(0);
                 break;
             default:
-                printf("Opcao invalida. Tente novamente.\n");
+                printf("Opcao invalida. Tente novamente.\n"); // Mensagem de erro para opção inválida, somente quando coloca um opção que não exite
         }
     }
 
     return 0;
 }
 
+// Função para exibir o menu principal
 void exibirMenuPrincipal() {
-    system(CLEAR);
+    system(CLEAR); // Limpa a tela
     printf("\n========================================\n");
     printf("              Menu Principal            \n");
     printf("========================================\n");
     printf("1. Procedimento de saude\n");
-    printf("2. Agendar Horario\n");
+    printf("2. Visualizar Agendas\n");
     printf("3. Pagamento\n");
     printf("5. Relatorio de Procedimentos Contratados\n");
     printf("6. Faturamento Diario\n");
@@ -88,8 +97,9 @@ void exibirMenuPrincipal() {
     printf("========================================\n");
 }
 
+// Função para exibir os procedimentos e permitir agendamento de horário
 void exibirProcedimentos() {
-    system(CLEAR);
+    system(CLEAR); // Limpa a tela
     printf("\n========================================\n");
     printf("         Procedimentos de saude         \n");
     printf("========================================\n");
@@ -107,18 +117,44 @@ void exibirProcedimentos() {
     if (opcao == 0) {
         return; // Voltar ao menu principal
     } else if (opcao >= 1 && opcao <= MAX_PROCEDIMENTOS) {
-        agendarHorario();
+        agendarHorario(opcao - 1); // Agendar horário para o procedimento escolhido
     } else {
         printf("Opcao invalida. Tente novamente.\n");
-        exibirProcedimentos();
+        exibirProcedimentos(); // Reexibe os procedimentos em caso de opção inválida
     }
 }
 
-void agendarHorario() {
+// Função para agendar um horário para um procedimento específico
+void agendarHorario(int procedimentoIndex) {
+    int horario;
+    exibirAgenda(procedimentoIndex); // Exibe a agenda do procedimento selecionado
+    printf("\nEscolha um horario para agendar (1-9): ");
+    scanf("%d", &horario);
+
+    // Verifica se o horário é válido
+    if (horario >= 1 && horario <= MAX_HORARIOS) {
+        // Verifica se o horário está livre
+        if (strcmp(agendas[procedimentoIndex][horario - 1], "L (livre)") == 0) {
+            snprintf(agendas[procedimentoIndex][horario - 1], 12, "A (agendado)"); // Marca o horário como agendado
+            printf("Horario agendado com sucesso!\n");
+        } else {
+            printf("Horario ja esta ocupado. Tente outro.\n"); // Mensagem de erro para horário ocupado
+        }
+    } else {
+        printf("Horario invalido.\n"); // Mensagem de erro para horário inválido
+    }
+
+    printf("\nPressione Enter para continuar...");
+    getchar();
+    getchar(); // Aguardar o Enter
+}
+
+// Função para visualizar as agendas dos procedimentos
+void visualizarAgendas() {
     int opcao;
 
     do {
-        system(CLEAR);
+        system(CLEAR); // Limpa a tela
         printf("\n========================================\n");
         printf("         Procedimentos de saude         \n");
         printf("========================================\n");
@@ -135,33 +171,35 @@ void agendarHorario() {
         if (opcao == 0) {
             return; // Voltar ao menu principal
         } else if (opcao >= 1 && opcao <= MAX_PROCEDIMENTOS) {
-            exibirAgenda(opcao - 1);
+            exibirAgenda(opcao - 1); // Exibe a agenda do procedimento escolhido
         } else {
-            printf("Opcao invalida. Tente novamente.\n");
+            printf("Opcao invalida. Tente novamente.\n"); // Mensagem de erro para opção inválida
         }
 
         printf("\nPressione Enter para continuar...");
-        getchar(); // Aguardar a entrada do usuário para continuar
-        getchar(); // Aguardar o Enter
+        getchar();
+        getchar();
     } while (1);
 }
 
+// Função para exibir a agenda de um procedimento específico
 void exibirAgenda(int procedimentoIndex) {
+    system(CLEAR); // Limpa a tela
     printf("\n========================================\n");
     printf("               Agenda %s              \n", procedimentoNomes[procedimentoIndex]);
     printf("========================================\n");
     printf("ID    Horario   Status\n");
     for (int i = 0; i < MAX_HORARIOS; i++) {
-        printf("%02d    %02d:00     %s\n", i + 1, i + 9, agendas[procedimentoIndex][i]);
+        printf("%02d    %02d:00     %s\n", i + 1, i + 9, agendas[procedimentoIndex][i]); // Exibe cada horário e seu status
     }
     printf("========================================\n");
 }
 
-
+// Função para inicializar todas as agendas como "L (livre)"
 void inicializarAgenda() {
     for (int i = 0; i < MAX_PROCEDIMENTOS; i++) {
         for (int j = 0; j < MAX_HORARIOS; j++) {
-            snprintf(agendas[i][j], 8, "L (livre)");
+            snprintf(agendas[i][j], 12, "L (livre)"); // Inicializa todos os horários como livres
         }
     }
 }
