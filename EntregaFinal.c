@@ -355,3 +355,4 @@ void removerAgendamento(int procedimentoIndex, int horario) {
         }
     }
 }
+// comentario 
