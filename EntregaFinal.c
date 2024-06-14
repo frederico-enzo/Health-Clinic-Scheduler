@@ -322,8 +322,6 @@ float calcularTotal(float* totalPorProcedimento) {
     return total;
 }
 
-
-
 // Função para exibir o consolidado do pagamento
 void exibirConsolidadoPagamento(float* totalPorProcedimento, float total, float desconto) {
     system(CLEAR); // Limpa a tela
@@ -357,4 +355,4 @@ void removerAgendamento(int procedimentoIndex, int horario) {
         }
     }
 }
-// comentario 
+
