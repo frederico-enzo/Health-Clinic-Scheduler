@@ -52,6 +52,7 @@ void visualizarAgendas();
 void exibirAgenda(int procedimentoIndex);
 void inicializarAgenda();
 void realizarPagamento();
+void exibirRelatorioProcedimentosContratados();
 float calcularTotal(float* totalPorProcedimento);
 void exibirConsolidadoPagamento(float* totalPorProcedimento, float total, float desconto);
 void removerAgendamento(int procedimentoIndex, int horario);
@@ -79,7 +80,7 @@ int main() {
                 realizarPagamento(); // Realiza o pagamento
                 break;
             case 5:
-                printf("Funcionalidade em desenvolvimento.\n"); 
+                exibirRelatorioProcedimentosContratados(); // Exibe o relatório de procedimentos contratados
                 break;
             case 6:
                 printf("Funcionalidade em desenvolvimento.\n"); 
@@ -235,7 +236,7 @@ void realizarPagamento() {
 
     printf("Escolha um procedimento para pagamento:\n");
     for (int i = 0; i < totalAgendamentos; i++) {
-        printf("%d. %s (Horario: %02d:00)\n", i + 1, procedimentoNomes[agendamentos[i].procedimentoIndex], agendamentos[i].horario + 9);
+        printf("%d. %s - Horario: %02d:00\n", i + 1, procedimentoNomes[agendamentos[i].procedimentoIndex], agendamentos[i].horario + 9);
     }
     printf("0. Voltar ao Menu Principal\n");
     int escolha;
@@ -311,6 +312,31 @@ void realizarPagamento() {
     getchar();
 }
 
+// Função para exibir o relatório de procedimentos contratados
+void exibirRelatorioProcedimentosContratados() {
+    if (totalAgendamentos == 0) {
+        printf("Nenhum procedimento contratado.\n");
+        printf("\nPressione Enter para continuar...");
+        getchar();
+        getchar();
+        return;
+    }
+
+    system(CLEAR); // Limpa a tela
+    printf("\n========================================\n");
+    printf("     Relatorio de Procedimentos Contratados     \n");
+    printf("========================================\n");
+    printf("Procedimento                Horario\n");
+    for (int i = 0; i < totalAgendamentos; i++) {
+        printf("%-25s %02d:00\n", procedimentoNomes[agendamentos[i].procedimentoIndex], agendamentos[i].horario + 9);
+    }
+    printf("========================================\n");
+
+    printf("\nPressione Enter para continuar...");
+    getchar();
+    getchar();
+}
+
 // Função para calcular o total dos procedimentos agendados
 float calcularTotal(float* totalPorProcedimento) {
     float total = 0;
@@ -355,4 +381,3 @@ void removerAgendamento(int procedimentoIndex, int horario) {
         }
     }
 }
-
