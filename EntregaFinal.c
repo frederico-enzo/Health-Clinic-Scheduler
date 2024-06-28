@@ -38,11 +38,23 @@ char agendas[MAX_PROCEDIMENTOS][MAX_HORARIOS][12]; // Agenda específica para ca
 typedef struct {
     int procedimentoIndex;
     int horario;
+    int turno; // 0 - Manhã, 1 - Tarde, 2 - Noite
 } Agendamento;
 
 // Lista de agendamentos
 Agendamento agendamentos[MAX_PROCEDIMENTOS * MAX_HORARIOS];
 int totalAgendamentos = 0;
+
+// Estrutura para armazenar um procedimento pago
+typedef struct {
+    int procedimentoIndex;
+    float valorPago;
+    int turno;
+} Pagamento;
+
+// Lista de pagamentos
+Pagamento pagamentos[MAX_PROCEDIMENTOS * MAX_HORARIOS];
+int totalPagamentos = 0;
 
 // Declaração de funções
 void exibirMenuPrincipal();
@@ -53,9 +65,11 @@ void exibirAgenda(int procedimentoIndex);
 void inicializarAgenda();
 void realizarPagamento();
 void exibirRelatorioProcedimentosContratados();
+void exibirRelatorioFaturamentoDiario();
 float calcularTotal(float* totalPorProcedimento);
 void exibirConsolidadoPagamento(float* totalPorProcedimento, float total, float desconto);
 void removerAgendamento(int procedimentoIndex, int horario);
+int determinarTurno(int horario);
 
 int main() {
     int opcao;
@@ -83,7 +97,7 @@ int main() {
                 exibirRelatorioProcedimentosContratados(); // Exibe o relatório de procedimentos contratados
                 break;
             case 6:
-                printf("Funcionalidade em desenvolvimento.\n"); 
+                exibirRelatorioFaturamentoDiario(); // Exibe o relatório de faturamento diário
                 break;
             case 7:
                 printf("Saindo...\n"); 
@@ -156,6 +170,7 @@ void agendarHorario(int procedimentoIndex) {
             // Adiciona o agendamento à lista de agendamentos
             agendamentos[totalAgendamentos].procedimentoIndex = procedimentoIndex;
             agendamentos[totalAgendamentos].horario = horario - 1;
+            agendamentos[totalAgendamentos].turno = determinarTurno(horario - 1);
             totalAgendamentos++;
         } else {
             printf("Horario ja esta ocupado. Tente outro.\n"); // Mensagem de erro para horário ocupado
@@ -219,12 +234,12 @@ void exibirAgenda(int procedimentoIndex) {
 void inicializarAgenda() {
     for (int i = 0; i < MAX_PROCEDIMENTOS; i++) {
         for (int j = 0; j < MAX_HORARIOS; j++) {
-            snprintf(agendas[i][j], 12, "L (livre)"); // Inicializa todos os horários como livres
+            snprintf(agendas[i][j], 12, "L (livre)"); // Define todos os horários como livres
         }
     }
 }
 
-// Função para realizar o pagamento
+// Função para realizar o pagamento de um agendamento
 void realizarPagamento() {
     if (totalAgendamentos == 0) {
         printf("Nenhum procedimento agendado.\n");
@@ -234,9 +249,13 @@ void realizarPagamento() {
         return;
     }
 
-    printf("Escolha um procedimento para pagamento:\n");
+    system(CLEAR); // Limpa a tela
+    printf("\n========================================\n");
+    printf("               Pagamento                \n");
+    printf("========================================\n");
+    printf("ID    Procedimento                Horario\n");
     for (int i = 0; i < totalAgendamentos; i++) {
-        printf("%d. %s - Horario: %02d:00\n", i + 1, procedimentoNomes[agendamentos[i].procedimentoIndex], agendamentos[i].horario + 9);
+        printf("%02d    %-25s %02d:00\n", i + 1, procedimentoNomes[agendamentos[i].procedimentoIndex], agendamentos[i].horario + 9);
     }
     printf("0. Voltar ao Menu Principal\n");
     int escolha;
@@ -254,6 +273,7 @@ void realizarPagamento() {
     int index = escolha - 1;
     int procedimentoIndex = agendamentos[index].procedimentoIndex;
     int horario = agendamentos[index].horario;
+    int turno = agendamentos[index].turno;
     float total = procedimentoValores[procedimentoIndex];
     float desconto;
 
@@ -293,6 +313,12 @@ void realizarPagamento() {
             printf("Troco: R$ %.2f\n", troco);
             printf("Pagamento realizado com sucesso.\n");
             removerAgendamento(procedimentoIndex, horario);
+
+            // Adiciona o pagamento à lista de pagamentos
+            pagamentos[totalPagamentos].procedimentoIndex = procedimentoIndex;
+            pagamentos[totalPagamentos].valorPago = total;
+            pagamentos[totalPagamentos].turno = turno;
+            totalPagamentos++;
         }
     } else if (opcao == 2) {
         int pagamentoOk;
@@ -301,6 +327,12 @@ void realizarPagamento() {
         if (pagamentoOk) {
             printf("Pagamento realizado com sucesso.\n");
             removerAgendamento(procedimentoIndex, horario);
+
+            // Adiciona o pagamento à lista de pagamentos
+            pagamentos[totalPagamentos].procedimentoIndex = procedimentoIndex;
+            pagamentos[totalPagamentos].valorPago = total;
+            pagamentos[totalPagamentos].turno = turno;
+            totalPagamentos++;
         } else {
             printf("Pagamento falhou. Tente novamente.\n");
             realizarPagamento();
@@ -380,4 +412,53 @@ void removerAgendamento(int procedimentoIndex, int horario) {
             break;
         }
     }
+}
+
+// Função para determinar o turno baseado no horário
+int determinarTurno(int horario) {
+    if (horario >= 0 && horario <= 2) {
+        return 0; // Manhã
+    } else if (horario >= 3 && horario <= 6) {
+        return 1; // Tarde
+    } else {
+        return 2; // Noite
+    }
+}
+
+// Função para exibir o relatório de faturamento diário
+void exibirRelatorioFaturamentoDiario() {
+    float totalPorProcedimento[MAX_PROCEDIMENTOS] = {0};
+    float totalPorTurno[3] = {0}; // 0 - Manhã, 1 - Tarde, 2 - Noite
+
+    for (int i = 0; i < totalPagamentos; i++) {
+        int procedimentoIndex = pagamentos[i].procedimentoIndex;
+        int turno = pagamentos[i].turno;
+        float valorPago = pagamentos[i].valorPago;
+
+        totalPorProcedimento[procedimentoIndex] += valorPago;
+        totalPorTurno[turno] += valorPago;
+    }
+
+    system(CLEAR); // Limpa a tela
+    printf("\n========================================\n");
+    printf("       Relatorio de Faturamento Diario       \n");
+    printf("========================================\n");
+
+    printf("Faturamento por Turno:\n");
+    printf("Manha: R$ %.2f\n", totalPorTurno[0]);
+    printf("Tarde: R$ %.2f\n", totalPorTurno[1]);
+    printf("Noite: R$ %.2f\n", totalPorTurno[2]);
+    printf("========================================\n");
+
+    printf("Faturamento por Procedimento:\n");
+    for (int i = 0; i < MAX_PROCEDIMENTOS; i++) {
+        if (totalPorProcedimento[i] > 0) {
+            printf("%-25s R$ %.2f\n", procedimentoNomes[i], totalPorProcedimento[i]);
+        }
+    }
+    printf("========================================\n");
+
+    printf("\nPressione Enter para continuar...");
+    getchar();
+    getchar();
 }
